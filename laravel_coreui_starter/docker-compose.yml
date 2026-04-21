@@ -1,0 +1,66 @@
+services:
+  app:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: coreui_laravel_app
+    ports:
+      - "8000:80"
+    environment:
+      - APP_NAME="CoreUI Laravel"
+      - APP_ENV=local
+      - APP_DEBUG=true
+      - APP_URL=http://localhost:8000
+      - DB_CONNECTION=mysql
+      - DB_HOST=mysql
+      - DB_PORT=3306
+      - DB_DATABASE=coreui_laravel
+      - DB_USERNAME=coreui_user
+      - DB_PASSWORD=coreui_password
+      - CACHE_DRIVER=file
+      - SESSION_DRIVER=file
+      - QUEUE_CONNECTION=sync
+    volumes:
+      - .:/app
+      - /app/node_modules
+      - /app/vendor
+    depends_on:
+      mysql:
+        condition: service_healthy
+    networks:
+      - laravel-network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 5s
+
+  mysql:
+    image: mysql:8.0
+    container_name: coreui_laravel_mysql
+    environment:
+      - MYSQL_ROOT_PASSWORD=root_password
+      - MYSQL_DATABASE=coreui_laravel
+      - MYSQL_USER=coreui_user
+      - MYSQL_PASSWORD=coreui_password
+      - MYSQL_ALLOW_EMPTY_PASSWORD=false
+    ports:
+      - "3306:3306"
+    volumes:
+      - mysql_data:/var/lib/mysql
+    networks:
+      - laravel-network
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-u", "coreui_user", "-pcoreui_password"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+networks:
+  laravel-network:
+    driver: bridge
+
+volumes:
+  mysql_data:
+    driver: local
