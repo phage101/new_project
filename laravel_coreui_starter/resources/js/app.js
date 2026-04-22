@@ -2,6 +2,7 @@ import '@coreui/coreui'
 import '@coreui/icons/css/all.min.css'
 import 'simplebar'
 import Chart from 'chart.js/auto'
+window.Chart = Chart
 
 const THEME_KEY = 'coreui-theme'
 

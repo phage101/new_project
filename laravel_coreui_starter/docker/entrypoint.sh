@@ -4,6 +4,11 @@ set -e
 
 echo "🚀 Initializing Laravel application..."
 
+# Ensure required directories exist when volume mounts overwrite them
+mkdir -p bootstrap/cache storage/framework/sessions storage/framework/views storage/framework/cache storage/logs
+chmod -R 775 bootstrap/cache storage
+chown -R www-data:www-data bootstrap/cache storage
+
 # Generate APP_KEY if not set
 if [ -z "$APP_KEY" ]; then
     echo "⏳ Generating APP_KEY..."
@@ -12,7 +17,7 @@ fi
 
 # Wait for database to be ready
 echo "⏳ Waiting for database connection..."
-php artisan migrate:status > /dev/null 2>&1 || php artisan db:ping --retries=5
+php artisan migrate:status > /dev/null 2>&1 || true
 
 # Run migrations
 echo "⏳ Running database migrations..."

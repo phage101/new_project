@@ -49,6 +49,9 @@ RUN docker-php-ext-install \
 # Install Composer
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
+# Allow composer to run as root
+ENV COMPOSER_ALLOW_SUPERUSER=1
+
 # Copy PHP configuration
 RUN echo "cgi.fix_pathinfo = 0" >> /usr/local/etc/php/conf.d/99-custom.ini
 
@@ -57,10 +60,12 @@ COPY docker/nginx.conf /etc/nginx/nginx.conf
 
 # Configure Supervisor
 COPY docker/supervisord.conf /etc/supervisor/conf.d/supervisord.conf
+RUN mkdir -p /var/log/supervisor
 
 # Copy entrypoint script
-COPY docker/entrypoint.sh /app/entrypoint.sh
-RUN chmod +x /app/entrypoint.sh
+COPY docker/entrypoint.sh /usr/local/bin/entrypoint.sh
+RUN sed -i 's/\r$//' /usr/local/bin/entrypoint.sh \
+    && chmod +x /usr/local/bin/entrypoint.sh
 
 # Copy application files
 COPY . .
@@ -68,13 +73,13 @@ COPY . .
 # Copy built assets from builder stage
 COPY --from=builder /app/public/build /app/public/build
 
-# Install PHP dependencies
-RUN composer install --no-interaction --optimize-autoloader --no-dev
-
 # Create necessary directories
 RUN mkdir -p /app/storage/logs \
     && mkdir -p /app/bootstrap/cache \
     && chmod -R 775 /app/storage /app/bootstrap/cache
+
+# Install PHP dependencies
+RUN composer install --no-interaction --optimize-autoloader --no-dev
 
 # Set permissions
 RUN chown -R www-data:www-data /app \
@@ -88,4 +93,4 @@ HEALTHCHECK --interval=30s --timeout=10s --start-period=5s --retries=3 \
     CMD curl -f http://localhost/health || exit 1
 
 # Run initialization and start services
-ENTRYPOINT ["/app/entrypoint.sh"]
+ENTRYPOINT ["/usr/local/bin/entrypoint.sh"]

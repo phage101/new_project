@@ -63,4 +63,6 @@ Route::middleware(['auth'])->group(function () {
     Route::get('/widgets', [PageController::class, 'show'])->defaults('section', 'widgets')->defaults('page', 'index')->name('widgets.index');
 });
 
-require __DIR__ . '/auth.php';
+if (file_exists(__DIR__ . '/auth.php')) {
+    require __DIR__ . '/auth.php';
+}
