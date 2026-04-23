@@ -5,8 +5,10 @@
     "license": "MIT",
     "require": {
         "php": "^8.2",
+        "bacon/bacon-qr-code": "^3.1",
         "laravel/framework": "^11.0",
-        "laravel/tinker": "^2.10"
+        "laravel/tinker": "^2.10",
+        "pragmarx/google2fa": "^9.0"
     },
     "require-dev": {
         "laravel/pint": "^1.14",

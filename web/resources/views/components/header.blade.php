@@ -1,8 +1,8 @@
-<header class="header header-sticky p-0 mb-4 border-bottom">
+<header class="header header-sticky p-0 border-bottom">
   <div class="container-fluid px-4">
-    <button class="header-toggler" type="button" data-coreui-toggle="sidebar" data-coreui-target="#sidebar">
+    <!-- <button class="header-toggler" type="button" data-coreui-toggle="sidebar" data-coreui-target="#sidebar">
       <i class="icon icon-lg cil-menu"></i>
-    </button>
+    </button> -->
 
     <ul class="header-nav d-none d-md-flex">
       <li class="nav-item"><a class="nav-link" href="{{ route('dashboard') }}">Dashboard</a></li>
@@ -29,6 +29,7 @@
         <ul class="dropdown-menu dropdown-menu-end pt-0">
           <li><h6 class="dropdown-header bg-body-secondary fw-semibold py-2">Account</h6></li>
           <li><span class="dropdown-item-text">{{ auth()->user()->name ?? 'User' }}</span></li>
+          <li><a class="dropdown-item" href="{{ route('profile.show') }}">Profile</a></li>
           <li>
             <form action="{{ route('logout') }}" method="POST">
               @csrf

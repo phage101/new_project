@@ -76,6 +76,6 @@
   </ul>
 
   <div class="sidebar-footer border-top d-none d-md-flex">
-    <button class="sidebar-toggler" type="button" data-coreui-toggle="unfoldable"></button>
+    <!-- <button class="sidebar-toggler" type="button" data-coreui-toggle="unfoldable" data-coreui-target="#sidebar"></button> -->
   </div>
 </div>

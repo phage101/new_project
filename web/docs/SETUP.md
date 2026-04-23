@@ -1,6 +1,24 @@
-# CoreUI + Laravel Starter — Setup Guide
+# LOGIFY — Setup Guide
 
-This guide walks you through setting up the CoreUI + Laravel admin template starter on your machine.
+This guide walks you through setting up LOGIFY on your machine. LOGIFY is a Laravel 11 + CoreUI admin panel with six modules: Authentication, Dashboard, User Management, Audit Trail, Profile, and Two-Factor Authentication.
+
+## Current State
+
+Verified on: 2026-04-23
+
+- Application stack: Laravel 11 + Blade + CoreUI
+- Asset pipeline: Vite
+- Default app URL: `http://localhost:8000`
+- Database expectation: MySQL-compatible database
+- Docker status: Docker docs are aligned to a two-service setup (`app`, `web`) with external DB
+
+Use this guide for native/local setup. For Docker-based setup and operations, use `DOCKER.md` and `docs/DOCKER_QUICK_REFERENCE.md`.
+
+## Setup Path Selection
+
+- Choose Native Setup if you run PHP, Composer, Node, and MySQL directly on your machine.
+- Choose Docker Setup if you run the app in containers and connect to an external DB.
+- Do not mix workflows in the same shell session unless you intentionally understand both environments.
 
 ## Prerequisites
 
@@ -20,17 +38,10 @@ Ensure you have the following installed:
 
 ## Step-by-Step Installation
 
-### 1. Copy Starter Files
-
-Replace the `laravel_coreui_starter` folder into your main Laravel project, or copy individual files if integrating into an existing app:
+### 1. Clone and Enter the Project
 
 ```bash
-# Option A: New Laravel project with starter
-cp -r laravel_coreui_starter ~/projects/my-admin-app
-cd ~/projects/my-admin-app
-
-# Option B: Integrate into existing Laravel app
-cp -r laravel_coreui_starter/* ~/existing-laravel-app/
+cd web/
 ```
 
 ### 2. Install Dependencies
@@ -111,7 +122,7 @@ Use Tinker to quickly create a user:
 
 ```bash
 php artisan tinker
-> \App\Models\User::create(['name' => 'Admin User', 'email' => 'admin@example.com', 'password' => bcrypt('password123')])
+> \App\Models\User::create(['name' => 'Admin User', 'email' => 'admin@example.com', 'password' => bcrypt('password')])
 > exit()
 ```
 
@@ -138,19 +149,57 @@ http://localhost:8000
 
 **Login** with the credentials you created:
 - Email: `admin@example.com`
-- Password: `password123`
+- Password: `password`
 
 ---
 
 ## Post-Installation Checklist
 
 - [ ] Database migrations completed without errors
-- [ ] User can login successfully
-- [ ] Dashboard loads with stats (Users, Roles, Activity Logs, Today Events)
-- [ ] Sidebar navigation appears and is clickable
-- [ ] Theme switcher (Light/Dark/Auto) in header works
-- [ ] Form pages display correctly
+- [ ] Seeders ran (Roles, Permissions, Settings)
+- [ ] Test user created and login succeeds
+- [ ] Dashboard loads with user count and recent activity
+- [ ] Sidebar shows: Dashboard, Users, Audit Trail, Profile
+- [ ] User Management: can list, create, edit, deactivate users
+- [ ] Audit Trail: log entries appear after actions
+- [ ] Profile: can view and edit own profile
+- [ ] 2FA: can enable and disable from Profile page
 - [ ] No JavaScript errors in browser console
+
+## Verification Checklist (Maintained)
+
+Update this section when setup behavior or prerequisites change.
+
+### Native Workflow Verification
+
+- [ ] `composer install` succeeds
+- [ ] `npm install` succeeds
+- [ ] `php artisan key:generate` succeeds
+- [ ] `php artisan migrate` succeeds
+- [ ] `php artisan db:seed` succeeds
+- [ ] `php artisan serve` starts successfully
+- [ ] `npm run dev` starts successfully
+- [ ] Login and dashboard render without errors
+
+### Docker Workflow Verification
+
+- [ ] `docker compose up -d` starts app and web services
+- [ ] `docker compose exec app php artisan migrate` succeeds
+- [ ] `http://localhost:8000` is reachable
+- [ ] DB connectivity from container is confirmed
+
+## Platform Command Matrix
+
+### Open App URL
+
+- Windows PowerShell: `Start-Process http://localhost:8000`
+- macOS: `open http://localhost:8000`
+- Linux: `xdg-open http://localhost:8000`
+
+### Typical Path Copy Command
+
+- Windows PowerShell: `Copy-Item .env.example .env`
+- macOS/Linux: `cp .env.example .env`
 
 ---
 
@@ -200,13 +249,6 @@ composer dump-autoload
 2. Check `.env` APP_KEY is set: `php artisan key:generate`
 3. Clear sessions: `php artisan cache:clear`
 
-### Issue: Charts not rendering
-
-**Solution:**
-1. Ensure `npm run build` or `npm run dev` completed
-2. Check browser console for JS errors (F12)
-3. Verify `<canvas id="main-chart">` exists in view
-
 ### Issue: "The storage path is not writable"
 
 **Solution:** Fix permissions:
@@ -218,37 +260,16 @@ chmod -R 775 storage bootstrap/cache
 
 ## Development Workflow
 
-### Adding a New Admin Page
+### Module Files by Feature
 
-1. **Create a route** in `routes/web.php`:
-   ```php
-   Route::get('/products', [ProductController::class, 'index'])->name('products.index');
-   ```
-
-2. **Create a controller**:
-   ```bash
-   php artisan make:controller ProductController
-   ```
-
-3. **Create a Blade view** in `resources/views/products/index.blade.php`:
-   ```blade
-   @extends('layouts.app')
-   @section('content')
-     <div class="card">
-       <div class="card-header">Products</div>
-       <div class="card-body">
-         {{-- Your content --}}
-       </div>
-     </div>
-   @endsection
-   ```
-
-4. **Add menu item** in `config/navigation.php`:
-   ```php
-   ['type' => 'item', 'label' => 'Products', 'route' => 'products.index', 'icon' => 'cil-bag'],
-   ```
-
-5. **Refresh** and the menu item will appear automatically.
+| Module | Controller | Views |
+|--------|-----------|-------|
+| Authentication | `Auth/AuthController.php` | `auth/login.blade.php` |
+| Dashboard | `DashboardController.php` | `dashboard/index.blade.php` |
+| User Management | `UserController.php` | `users/*.blade.php` |
+| Audit Trail | `AuditTrailController.php` | `audit/index.blade.php` |
+| Profile | `ProfileController.php` | `profile/*.blade.php` |
+| 2FA | `TwoFactorController.php` | `auth/two-factor.blade.php` |
 
 ### Watching Assets During Development
 
@@ -271,43 +292,26 @@ composer dump-autoload
 
 ---
 
-## Enabling RBAC (Role-Based Access Control)
+## RBAC (Role-Based Access Control)
 
-If you want to enforce role-based permissions:
+RBAC is **required** for User Management and Audit Trail. It is not optional.
 
-### 1. Add Trait to User Model
+`HasRoles` trait is applied to `User` model. The `EnsureUserHasPermission` middleware is registered and used on protected routes.
 
-Edit `app/Models/User.php`:
-```php
-use App\Models\Concerns\HasRoles;
+Seeded permissions:
+- `users.manage` — User Management (create, edit, deactivate)
+- `audit.view` — Audit Trail viewer
+- `profile.edit` — Profile editing (own profile)
 
-class User extends Authenticatable {
-    use HasRoles;
-    // ...
-}
-```
+Seeded roles and their permissions:
 
-### 2. Register Middleware (Laravel 11)
+| Role | users.manage | audit.view | profile.edit |
+|------|-------------|-----------|-------------|
+| Administrator | ✓ | ✓ | ✓ |
+| Manager | | ✓ | ✓ |
+| Viewer | | ✓ | ✓ |
 
-Edit `bootstrap/app.php`:
-```php
-->withMiddleware(function (Middleware $middleware) {
-    $middleware->alias([
-        'permission' => \App\Http\Middleware\EnsureUserHasPermission::class,
-    ]);
-})
-```
-
-### 3. Protect Routes
-
-In `routes/web.php`:
-```php
-Route::get('/admin/users', [UserController::class, 'index'])
-    ->middleware(['auth', 'permission:users.manage']);
-```
-
-### 4. Check in Blade
-
+To check permissions in Blade:
 ```blade
 @if(auth()->user()?->hasPermission('users.manage'))
     <a href="{{ route('users.index') }}">Manage Users</a>

@@ -1,7 +1,10 @@
 <?php
 
+use App\Http\Controllers\AuditController;
 use App\Http\Controllers\DashboardController;
 use App\Http\Controllers\PageController;
+use App\Http\Controllers\ProfileController;
+use App\Http\Controllers\UserController;
 use Illuminate\Support\Facades\Route;
 
 // Health check endpoint for Docker/load balancers
@@ -14,6 +17,27 @@ Route::view('/500', 'errors.500')->name('errors.500');
 
 Route::middleware(['auth'])->group(function () {
     Route::get('/dashboard', [DashboardController::class, 'index'])->name('dashboard');
+
+    // Profile
+    Route::get('/profile', [ProfileController::class, 'show'])->name('profile.show');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password');
+
+    Route::get('/audit', [AuditController::class, 'index'])
+        ->middleware('permission:audit.view')
+        ->name('audit.index');
+
+    // User Management
+    Route::middleware('permission:users.manage')->prefix('users')->name('users.')->group(function () {
+        Route::get('/', [UserController::class, 'index'])->name('index');
+        Route::get('/create', [UserController::class, 'create'])->name('create');
+        Route::post('/', [UserController::class, 'store'])->name('store');
+        Route::get('/{user}/edit', [UserController::class, 'edit'])->name('edit')->withTrashed();
+        Route::put('/{user}', [UserController::class, 'update'])->name('update')->withTrashed();
+        Route::post('/{user}/deactivate', [UserController::class, 'deactivate'])->name('deactivate')->withTrashed();
+        Route::delete('/{user}', [UserController::class, 'destroy'])->name('destroy')->withTrashed();
+        Route::post('/{id}/restore', [UserController::class, 'restore'])->name('restore');
+    });
 
     Route::get('/theme/colors', [PageController::class, 'show'])->defaults('section', 'theme')->defaults('page', 'colors')->name('theme.colors');
     Route::get('/theme/typography', [PageController::class, 'show'])->defaults('section', 'theme')->defaults('page', 'typography')->name('theme.typography');

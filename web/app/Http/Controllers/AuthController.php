@@ -2,11 +2,8 @@
 
 namespace App\Http\Controllers;
 
-use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
 
 class AuthController extends Controller
 {
@@ -22,9 +19,21 @@ class AuthController extends Controller
             'password' => ['required'],
         ]);
 
-        if (Auth::attempt($credentials)) {
-            $request->session()->regenerate();
+        if (Auth::attempt($credentials, $request->boolean('remember'))) {
+            $user = Auth::user();
 
+            // If 2FA is enabled, pause the session and redirect to the challenge.
+            if ($user->hasTwoFactorEnabled()) {
+                $remember = $request->boolean('remember');
+                Auth::logout();
+                session([
+                    '2fa_user_id' => $user->id,
+                    '2fa_remember' => $remember,
+                ]);
+                return redirect()->route('two-factor.challenge');
+            }
+
+            $request->session()->regenerate();
             return redirect()->intended('dashboard');
         }
 
@@ -40,30 +49,6 @@ class AuthController extends Controller
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect('/');
-    }
-
-    public function showRegister()
-    {
-        return view('auth.register');
-    }
-
-    public function register(Request $request)
-    {
-        $validated = $request->validate([
-            'name' => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users'],
-            'password' => ['required', 'confirmed', Password::defaults()],
-        ]);
-
-        $user = User::create([
-            'name' => $validated['name'],
-            'email' => $validated['email'],
-            'password' => Hash::make($validated['password']),
-        ]);
-
-        Auth::login($user);
-
-        return redirect('/dashboard');
+        return redirect()->route('login');
     }
 }
