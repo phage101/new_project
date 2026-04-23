@@ -10,7 +10,7 @@ Ensure you have the following installed:
   - Verify: `php -v`
 - **Composer** ([Download](https://getcomposer.org/download/))
   - Verify: `composer --version`
-- **Node.js 18+ and npm** ([Download](https://nodejs.org/))
+- **Node.js 20.19+ (or 22.12+) and npm** ([Download](https://nodejs.org/))
   - Verify: `node -v && npm -v`
 - **MySQL 8.0 or higher** ([Download](https://www.mysql.com/downloads/))
   - Verify: `mysql --version`

@@ -12,7 +12,7 @@ A production-ready Laravel 11 + CoreUI 5 admin template scaffold with Blade layo
 - **40+ Pre-wired Routes**: All CoreUI demo sections mapped to Laravel routes
 
 ### Backend
-- **Authentication**: Laravel Breeze (Blade variant) for user management
+- **Authentication**: Custom Blade auth flow (login/register/logout via `AuthController`)
 - **RBAC Scaffold**: Role, Permission models with many-to-many relationships
 - **Activity Logging**: Audit trail table for user actions
 - **Settings System**: Global and user-scoped configuration storage
@@ -23,14 +23,14 @@ A production-ready Laravel 11 + CoreUI 5 admin template scaffold with Blade layo
 - **Permissions Table**: Action-based permissions linked to roles
 - **Activity Logs**: Audit events with user, model type, and timestamps
 - **Settings**: Global config key-value pairs
-- **Default Users**: Uses Laravel's `users` table from Breeze
+- **Default Users**: Uses Laravel's built-in `users` table
 
 ## Quick Start
 
 ### Prerequisites
 - PHP 8.2+
 - Composer
-- Node.js 18+ and npm
+- Node.js 20.19+ (or 22.12+) and npm
 - MySQL 8.0+
 
 ### Installation

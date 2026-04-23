@@ -1,0 +1,33 @@
+services:
+  app:
+    container_name: logify-app
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: app
+    env_file:
+      - .env.docker
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
+    restart: unless-stopped
+    networks:
+      - laravel-network
+
+  web:
+    container_name: logify-web
+    build:
+      context: .
+      dockerfile: Dockerfile
+      target: web
+    depends_on:
+      app:
+        condition: service_healthy
+    ports:
+      - "8000:80"
+    restart: unless-stopped
+    networks:
+      - laravel-network
+
+networks:
+  laravel-network:
+    driver: bridge
